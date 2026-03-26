@@ -188,6 +188,10 @@ def _logo_rect(slide, logo_path: Optional[str],
         if cache_key not in _logo_cache:
             from PIL import Image
             img = Image.open(logo_path).convert("RGBA")
+            # 투명 여백 제거 (getbbox는 불투명 픽셀의 bounding box 반환)
+            bbox = img.getbbox()
+            if bbox:
+                img = img.crop(bbox)
             iw, ih = img.size
             alpha = img.split()[3]
             has_transparency = alpha.getextrema()[0] < 255
