@@ -596,6 +596,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 <script>
 // ── 상태 ──────────────────────────────────────────────────────────────────
 const state = {
+  people:       null,
   excelPath:    null,
   logoPath:     null,
   companyName:  '',
@@ -749,6 +750,7 @@ async function handleExcelUpload(input) {
     const res = await fetch('/upload-excel', { method: 'POST', body: fd });
     const data = await res.json();
     if (data.error) { showToast(data.error, 'error'); return; }
+    state.people = data.people;
     state.excelPath = data.tmp_path;
     state.peopleCount = data.count;
     const zone = document.getElementById('excel-zone');
@@ -825,7 +827,7 @@ function removeLogo() {
 
 // ── 생성 ──────────────────────────────────────────────────────────────────
 async function generate() {
-  if (!state.excelPath)                                { showToast('엑셀 파일을 업로드해주세요', 'warning'); switchTab('upload');  return; }
+  if (!state.people)                                   { showToast('엑셀 파일을 업로드해주세요', 'warning'); switchTab('upload');  return; }
   if (!state.logoPath && !state.companyName.trim())    { showToast('로고 또는 회사명을 입력해주세요', 'warning'); switchTab('upload'); return; }
   if (!state.design)                                   { showToast('디자인을 선택해주세요', 'warning'); switchTab('design');  return; }
 
@@ -837,7 +839,7 @@ async function generate() {
   btnText.textContent = '생성 중...';
 
   const fd = new FormData();
-  fd.append('excel_path',   state.excelPath);
+  fd.append('people_json',  JSON.stringify(state.people));
   fd.append('logo_path',    state.logoPath || '');
   fd.append('company_name', state.companyName);
   fd.append('badge_type',   state.badgeType);

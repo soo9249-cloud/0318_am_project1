@@ -44,7 +44,7 @@ async def upload_logo(file: UploadFile = File(...)):
 
 @app.post("/generate")
 async def generate(
-    excel_path:   str  = Form(...),
+    people_json:  str  = Form(...),
     logo_path:    str  = Form(""),
     company_name: str  = Form(""),
     badge_type:   str  = Form(...),
@@ -56,9 +56,12 @@ async def generate(
     event_name:   str  = Form(""),
     event_date:   str  = Form(""),
 ):
-    people = bm.read_excel(excel_path)
-    if not people or (isinstance(people[0], dict) and "error" in people[0]):
-        return JSONResponse({"error": "엑셀 읽기 실패"}, status_code=400)
+    try:
+        people = json.loads(people_json)
+    except Exception:
+        return JSONResponse({"error": "데이터 파싱 실패"}, status_code=400)
+    if not people:
+        return JSONResponse({"error": "인원 데이터가 없습니다"}, status_code=400)
     em = event_mode.lower() == "true"
     event_info = {"event_name": event_name, "event_date": event_date} if em else None
     result = bm.generate_badges(
