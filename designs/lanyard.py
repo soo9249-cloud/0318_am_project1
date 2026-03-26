@@ -156,22 +156,26 @@ def _txt(slide, x: float, y: float, w: float, h: float,
     return tb
 
 
+_logo_cache: dict[tuple, bytes] = {}
+
 def _logo_rect(slide, logo_path: Optional[str],
                x: float, y: float, w: float, h: float,
                bg_hex: str = "#FFFFFF") -> bool:
-    """로고를 배경색 위에 합성해서 삽입 (투명도 체커보드 방지)."""
+    """로고를 배경색 위에 합성해서 삽입 (투명도 체커보드 방지). 결과 캐시."""
     if not logo_path:
         return False
     try:
-        from PIL import Image
-        img = Image.open(logo_path).convert("RGBA")
-        r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
-        bg = Image.new("RGBA", img.size, (r, g, b, 255))
-        bg.paste(img, mask=img.split()[3])
-        buf = io.BytesIO()
-        bg.convert("RGB").save(buf, "PNG")
-        buf.seek(0)
-        slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(w), Mm(h))
+        cache_key = (logo_path, bg_hex)
+        if cache_key not in _logo_cache:
+            from PIL import Image
+            img = Image.open(logo_path).convert("RGBA")
+            r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+            bg = Image.new("RGBA", img.size, (r, g, b, 255))
+            bg.paste(img, mask=img.split()[3])
+            buf = io.BytesIO()
+            bg.convert("RGB").save(buf, "PNG")
+            _logo_cache[cache_key] = buf.getvalue()
+        slide.shapes.add_picture(io.BytesIO(_logo_cache[cache_key]), Mm(x), Mm(y), Mm(w), Mm(h))
         return True
     except Exception:
         return False

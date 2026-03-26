@@ -146,27 +146,31 @@ def _txt(slide, x: float, y: float, w: float, h: float,
     return tb
 
 
+_logo_cache: dict[tuple, bytes] = {}
+
 def _logo_circle(slide, logo_path: Optional[str],
                  x: float, y: float, d: float,
                  bg_hex: str = "#FFFFFF") -> bool:
-    """원형 크롭 로고 삽입 (배경색 합성). 성공 여부 반환."""
+    """원형 크롭 로고 삽입 (배경색 합성). 성공 여부 반환. 결과 캐시."""
     if not logo_path:
         return False
     try:
-        from PIL import Image, ImageDraw
-        px   = max(int(d * 12), 4)
-        logo = Image.open(logo_path).convert("RGBA").resize((px, px))
-        r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
-        bg   = Image.new("RGBA", (px, px), (r, g, b, 255))
-        bg.paste(logo, mask=logo.split()[3])
-        mask = Image.new("L", (px, px), 0)
-        ImageDraw.Draw(mask).ellipse([0, 0, px - 1, px - 1], fill=255)
-        result = Image.new("RGBA", (px, px), (0, 0, 0, 0))
-        result.paste(bg, mask=mask)
-        buf = io.BytesIO()
-        result.save(buf, "PNG")
-        buf.seek(0)
-        slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(d), Mm(d))
+        cache_key = ("circle", logo_path, bg_hex, d)
+        if cache_key not in _logo_cache:
+            from PIL import Image, ImageDraw
+            px   = max(int(d * 12), 4)
+            logo = Image.open(logo_path).convert("RGBA").resize((px, px))
+            r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+            bg   = Image.new("RGBA", (px, px), (r, g, b, 255))
+            bg.paste(logo, mask=logo.split()[3])
+            mask = Image.new("L", (px, px), 0)
+            ImageDraw.Draw(mask).ellipse([0, 0, px - 1, px - 1], fill=255)
+            result = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+            result.paste(bg, mask=mask)
+            buf = io.BytesIO()
+            result.save(buf, "PNG")
+            _logo_cache[cache_key] = buf.getvalue()
+        slide.shapes.add_picture(io.BytesIO(_logo_cache[cache_key]), Mm(x), Mm(y), Mm(d), Mm(d))
         return True
     except Exception:
         return False
@@ -175,19 +179,21 @@ def _logo_circle(slide, logo_path: Optional[str],
 def _logo_rect(slide, logo_path: Optional[str],
                x: float, y: float, w: float, h: float,
                bg_hex: str = "#FFFFFF") -> bool:
-    """로고 이미지 삽입 (배경색 합성, 체커보드 방지). 성공 여부 반환."""
+    """로고 이미지 삽입 (배경색 합성, 체커보드 방지). 성공 여부 반환. 결과 캐시."""
     if not logo_path:
         return False
     try:
-        from PIL import Image
-        img = Image.open(logo_path).convert("RGBA")
-        r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
-        bg = Image.new("RGBA", img.size, (r, g, b, 255))
-        bg.paste(img, mask=img.split()[3])
-        buf = io.BytesIO()
-        bg.convert("RGB").save(buf, "PNG")
-        buf.seek(0)
-        slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(w), Mm(h))
+        cache_key = ("rect", logo_path, bg_hex)
+        if cache_key not in _logo_cache:
+            from PIL import Image
+            img = Image.open(logo_path).convert("RGBA")
+            r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+            bg = Image.new("RGBA", img.size, (r, g, b, 255))
+            bg.paste(img, mask=img.split()[3])
+            buf = io.BytesIO()
+            bg.convert("RGB").save(buf, "PNG")
+            _logo_cache[cache_key] = buf.getvalue()
+        slide.shapes.add_picture(io.BytesIO(_logo_cache[cache_key]), Mm(x), Mm(y), Mm(w), Mm(h))
         return True
     except Exception:
         return False
