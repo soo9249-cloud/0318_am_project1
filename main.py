@@ -93,4 +93,10 @@ async def download(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8080)
+    import os
+    
+    # Railway가 환경변수로 주는 포트를 사용하되, 없으면 8080을 씁니다.
+    port = int(os.environ.get("PORT", 8080))
+    
+    # host를 0.0.0.0으로 해야 외부에서 접속이 가능해집니다!
+    uvicorn.run(app, host="0.0.0.0", port=port)
