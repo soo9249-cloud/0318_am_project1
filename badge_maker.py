@@ -14,7 +14,7 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Mm, Pt
 from lxml import etree
 
-BASE_DIR  = Path(__file__).parent.parent
+BASE_DIR  = Path(__file__).parent
 SPEC_PATH = BASE_DIR / "designs" / "design_spec.json"
 with open(SPEC_PATH, encoding="utf-8") as _f:
     SPEC = json.load(_f)
