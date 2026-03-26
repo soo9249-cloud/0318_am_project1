@@ -169,8 +169,9 @@ def _logo_circle(slide, logo_path: Optional[str],
             result.paste(bg, mask=mask)
             buf = io.BytesIO()
             result.save(buf, "PNG")
-            _logo_cache[cache_key] = buf.getvalue()
-        slide.shapes.add_picture(io.BytesIO(_logo_cache[cache_key]), Mm(x), Mm(y), Mm(d), Mm(d))
+            _logo_cache[cache_key] = (buf.getvalue(), px, px)
+        data, _, __ = _logo_cache[cache_key]
+        slide.shapes.add_picture(io.BytesIO(data), Mm(x), Mm(y), Mm(d), Mm(d))
         return True
     except Exception:
         return False
@@ -179,7 +180,7 @@ def _logo_circle(slide, logo_path: Optional[str],
 def _logo_rect(slide, logo_path: Optional[str],
                x: float, y: float, w: float, h: float,
                bg_hex: str = "#FFFFFF") -> bool:
-    """로고 이미지 삽입 (배경색 합성, 체커보드 방지). 성공 여부 반환. 결과 캐시."""
+    """로고 이미지 삽입 (배경색 합성, 체커보드 방지). 원본 비율 유지, 결과 캐시."""
     if not logo_path:
         return False
     try:
@@ -187,13 +188,20 @@ def _logo_rect(slide, logo_path: Optional[str],
         if cache_key not in _logo_cache:
             from PIL import Image
             img = Image.open(logo_path).convert("RGBA")
+            iw, ih = img.size
             r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
             bg = Image.new("RGBA", img.size, (r, g, b, 255))
             bg.paste(img, mask=img.split()[3])
             buf = io.BytesIO()
             bg.convert("RGB").save(buf, "PNG")
-            _logo_cache[cache_key] = buf.getvalue()
-        slide.shapes.add_picture(io.BytesIO(_logo_cache[cache_key]), Mm(x), Mm(y), Mm(w), Mm(h))
+            _logo_cache[cache_key] = (buf.getvalue(), iw, ih)
+        data, iw, ih = _logo_cache[cache_key]
+        aspect = iw / max(ih, 1)
+        dw = min(w, h * aspect)
+        dh = dw / aspect
+        slide.shapes.add_picture(io.BytesIO(data),
+                                 Mm(x + (w - dw) / 2), Mm(y + (h - dh) / 2),
+                                 Mm(dw), Mm(dh))
         return True
     except Exception:
         return False
