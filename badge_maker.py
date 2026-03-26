@@ -243,7 +243,7 @@ def _draw_A(slide, person: dict, x: float, y: float, w: float, h: float,
 
     _rounded_rect(slide, x, y, w, h, bg_hex)
 
-    left_w = w * 0.20
+    left_w = w * 0.28
     div_x  = x + left_w
 
     # 왼쪽: 원형 로고 or 회사명 텍스트
@@ -336,8 +336,8 @@ def _draw_B(slide, person: dict, x: float, y: float, w: float, h: float,
 
     muted = _darken(txt_hex, 30)
     if logo_path:
-        logo_h = bot_h * 2.5
-        logo_w = min(rw, logo_h * 4)
+        logo_h = max(h * 0.55, bot_h * 2.5)
+        logo_w = min(rw, logo_h * 6)
         _logo_rect(slide, logo_path, x + margin + (rw - logo_w) / 2, cy, logo_w, logo_h, bg_hex=bg_hex)
     elif company:
         _txt(slide, x + margin, cy, rw, _pt_mm(sz_co) + 1,
