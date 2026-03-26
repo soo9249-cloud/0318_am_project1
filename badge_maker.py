@@ -246,11 +246,12 @@ def _draw_A(slide, person: dict, x: float, y: float, w: float, h: float,
     left_w = w * 0.28
     div_x  = x + left_w
 
-    # 왼쪽: 원형 로고 or 회사명 텍스트
-    circle_d = min(left_w, h) - PAD * 2
-    lx = x + (left_w - circle_d) / 2
-    ly = y + (h - circle_d) / 2
-    if not _logo_circle(slide, logo_path, lx, ly, circle_d, bg_hex=bg_hex):
+    # 왼쪽: 로고 or 회사명 텍스트 (비율 유지, 원형 클립 없음)
+    logo_pad = PAD * 0.8
+    if not _logo_rect(slide, logo_path,
+                      x + logo_pad, y + logo_pad,
+                      left_w - logo_pad * 2, h - logo_pad * 2,
+                      bg_hex=bg_hex):
         company = (company_name or "").strip()
         if company:
             _txt(slide, x + PAD * 0.3, y + PAD, left_w - PAD * 0.6, h - PAD * 2,
@@ -365,17 +366,15 @@ def _draw_C(slide, person: dict, x: float, y: float, w: float, h: float,
     dept_ln  = dept if (rank and dept) else ""
     muted    = _darken(txt_hex, 40)
 
-    # 원형 로고 or 색상 점
+    # 로고 or fallback (비율 유지, 원형 클립 없음)
     circle_d = h - GPAD * 2
     lx = x + GPAD
     ly = y + GPAD
 
-    if not _logo_circle(slide, logo_path, lx, ly, circle_d, bg_hex=bg_hex):
-        # Fallback: 배경보다 약간 밝은 원
-        r, g, b = _hex_t(bg_hex)
-        dot = "#{:02X}{:02X}{:02X}".format(
-            min(255, r + 40), min(255, g + 40), min(255, b + 40))
-        _oval(slide, lx, ly, circle_d, dot)
+    if not _logo_rect(slide, logo_path, lx, ly, circle_d, circle_d, bg_hex=bg_hex):
+        if company_name:
+            _txt(slide, lx, ly, circle_d, circle_d,
+                 company_name[:5], "kr_bold", 5.5, txt_hex, PP_ALIGN.CENTER)
 
     tx = lx + circle_d + GPAD
     rw = w - (tx - x) - GPAD
