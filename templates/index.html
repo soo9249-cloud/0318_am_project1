@@ -730,9 +730,12 @@ function selectDesign(key) {
 function updateLanyardColors(designKey) {
   const opts = LANYARD_COLORS[designKey] || [];
   const sel = document.getElementById('lanyard-color-select');
-  sel.innerHTML = opts.map(o => `<option value="${o}">${COLOR_LABELS[o] || o}</option>`).join('');
+  // 기존 이벤트 리스너 제거 후 새로 등록
+  const newSel = sel.cloneNode(false);
+  sel.parentNode.replaceChild(newSel, sel);
+  newSel.innerHTML = opts.map(o => `<option value="${o}">${COLOR_LABELS[o] || o}</option>`).join('');
   state.color = opts[0] || '';
-  sel.onchange = () => { state.color = sel.value; };
+  newSel.addEventListener('change', () => { state.color = newSel.value; });
   document.getElementById('lanyard-color-section').style.display = 'block';
 }
 

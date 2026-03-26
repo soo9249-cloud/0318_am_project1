@@ -64,6 +64,7 @@ async def generate(
         return JSONResponse({"error": "인원 데이터가 없습니다"}, status_code=400)
     em = event_mode.lower() == "true"
     event_info = {"event_name": event_name, "event_date": event_date} if em else None
+    print(f"[generate] design={design!r} color={color!r} badge_type={badge_type!r} event_mode={em}", flush=True)
     result = bm.generate_badges(
         people=people,
         logo_path=logo_path or None,
