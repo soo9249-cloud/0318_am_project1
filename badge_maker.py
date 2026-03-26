@@ -243,11 +243,11 @@ def _draw_A(slide, person: dict, x: float, y: float, w: float, h: float,
 
     _rounded_rect(slide, x, y, w, h, bg_hex)
 
-    left_w = w * 0.28
+    left_w = w * 0.30
     div_x  = x + left_w
 
-    # 왼쪽: 로고 or 회사명 텍스트 (비율 유지, 원형 클립 없음)
-    logo_pad = PAD * 0.8
+    # 왼쪽: 로고 or 회사명 텍스트 (비율 유지, 패딩 최소화로 존 꽉 채움)
+    logo_pad = 1.5
     if not _logo_rect(slide, logo_path,
                       x + logo_pad, y + logo_pad,
                       left_w - logo_pad * 2, h - logo_pad * 2,
@@ -260,9 +260,9 @@ def _draw_A(slide, person: dict, x: float, y: float, w: float, h: float,
     # 수직 구분선
     _vline(slide, div_x, y + PAD, y + h - PAD, _darken(bg_hex, 40), 0.5)
 
-    # 오른쪽 텍스트
-    tx  = div_x + PAD
-    rw  = w - (div_x - x) - PAD * 2
+    # 오른쪽 텍스트 (가운데 정렬)
+    tx  = div_x + PAD * 0.5
+    rw  = w - (div_x - x) - PAD
     sz_kr = spec["name_kr"]["size"]   # 14
     sz_en = spec["name_en"]["size"]    # 8
     sz_rd = spec["rank_dept"]["size"]  # 7
@@ -278,18 +278,19 @@ def _draw_A(slide, person: dict, x: float, y: float, w: float, h: float,
     cy = y + (h - bh) / 2
 
     if name_kr:
-        _txt(slide, tx, cy, rw, _pt_mm(sz_kr) + 1, name_kr, "kr_bold", sz_kr, txt_hex)
+        _txt(slide, tx, cy, rw, _pt_mm(sz_kr) + 1, name_kr, "kr_bold", sz_kr, txt_hex,
+             PP_ALIGN.CENTER)
         cy += _pt_mm(sz_kr) + GAP
     if name_en:
         _txt(slide, tx, cy, rw, _pt_mm(sz_en) + 1, name_en,
-             "en_bold", sz_en, txt_hex, all_caps=True)
+             "en_bold", sz_en, txt_hex, PP_ALIGN.CENTER, all_caps=True)
         cy += _pt_mm(sz_en) + GAP
     if rd_line:
         muted = _darken(txt_hex, 30)
-        _hline(slide, tx, cy + 0.25, tx + rw * 0.85, muted, 0.3)
+        _hline(slide, tx + rw * 0.075, cy + 0.25, tx + rw * 0.925, muted, 0.3)
         cy += 0.5 + GAP
         _txt(slide, tx, cy, rw, _pt_mm(sz_rd) + 1, rd_line,
-             "kr_regular", sz_rd, muted)
+             "kr_regular", sz_rd, muted, PP_ALIGN.CENTER)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
