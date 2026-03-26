@@ -488,8 +488,8 @@ def generate_badges(
                 layout_key = "대형_2개"
             else:
                 slide_w, slide_h = 210.0, 297.0
-                # UI에서 "일반_2개" / "일반_4개" 로 전달되지 않으면 기본값 사용
-                layout_key = layout if layout in ln.LANYARD_LAYOUTS else "일반_2개"
+                _layout_map = {"A4에 2개": "일반_2개", "A4에 4개": "일반_4개"}
+                layout_key = _layout_map.get(layout, layout if layout in ln.LANYARD_LAYOUTS else "일반_2개")
 
             prs.slide_width  = Mm(slide_w)
             prs.slide_height = Mm(slide_h)

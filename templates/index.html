@@ -630,6 +630,11 @@ const LANYARD_COLORS = {
   E: {{ spec.lanyard.E.gradients.keys()   | list | tojson }},
   F: {{ spec.lanyard.F.bg_colors.keys()   | list | tojson }},
 };
+const COLOR_LABELS = {
+  Coral:'코랄', Mint:'민트', Sky:'하늘', Lavender:'라벤더',
+  CoralPurple:'코랄+퍼플', MintBlue:'민트+파랑', SkyIndigo:'하늘+남색', PeachGold:'피치+골드',
+  SkyBlue:'스카이블루',
+};
 
 // ── 탭 전환 ───────────────────────────────────────────────────────────────
 function switchTab(tab) {
@@ -659,8 +664,9 @@ function setOpt(key, val, btn) {
   btn.classList.add('active');
 }
 
-// ── 색상 스와치 ───────────────────────────────────────────────────────────
+// ── 색상 스와치 (뱃지형 전용) ────────────────────────────────────────────
 function setColor(color, el) {
+  if (state.badgeType !== 'badge') return;  // 랜야드 모드에서는 무시
   state.color = color;
   document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
@@ -724,7 +730,7 @@ function selectDesign(key) {
 function updateLanyardColors(designKey) {
   const opts = LANYARD_COLORS[designKey] || [];
   const sel = document.getElementById('lanyard-color-select');
-  sel.innerHTML = opts.map(o => `<option value="${o}">${o}</option>`).join('');
+  sel.innerHTML = opts.map(o => `<option value="${o}">${COLOR_LABELS[o] || o}</option>`).join('');
   state.color = opts[0] || '';
   sel.onchange = () => { state.color = sel.value; };
   document.getElementById('lanyard-color-section').style.display = 'block';
