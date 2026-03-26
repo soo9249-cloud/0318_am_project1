@@ -96,34 +96,41 @@ def _oval(slide, x: float, y: float, w: float, h: float,
     return shape
 
 
+_gradient_cache: dict[tuple, bytes] = {}
+
 def _gradient_bg(slide, x: float, y: float, w: float, h: float,
                  hex1: str, hex2: str, corner_mm: float = 2.0):
-    """Pillow로 수직 그라데이션 + 둥근 모서리 이미지를 생성해 슬라이드에 삽입."""
+    """Pillow로 수직 그라데이션 + 둥근 모서리 이미지를 생성해 슬라이드에 삽입. 캐시 사용."""
     from PIL import Image, ImageDraw
-    scale = 8  # 8px/mm
-    pw, ph = max(int(w * scale), 2), max(int(h * scale), 2)
-    cr = max(int(corner_mm * scale), 1)
-    r1, g1, b1 = int(hex1[1:3], 16), int(hex1[3:5], 16), int(hex1[5:7], 16)
-    r2, g2, b2 = int(hex2[1:3], 16), int(hex2[3:5], 16), int(hex2[5:7], 16)
+    cache_key = (round(w), round(h), hex1, hex2, round(corner_mm, 1))
+    if cache_key not in _gradient_cache:
+        scale = 8  # 8px/mm
+        pw, ph = max(int(w * scale), 2), max(int(h * scale), 2)
+        cr = max(int(corner_mm * scale), 1)
+        r1, g1, b1 = int(hex1[1:3], 16), int(hex1[3:5], 16), int(hex1[5:7], 16)
+        r2, g2, b2 = int(hex2[1:3], 16), int(hex2[3:5], 16), int(hex2[5:7], 16)
 
-    img = Image.new("RGBA", (pw, ph), (0, 0, 0, 0))
-    pix = img.load()
-    for row in range(ph):
-        t = row / max(ph - 1, 1)
-        rc = int(r1 + (r2 - r1) * t)
-        gc = int(g1 + (g2 - g1) * t)
-        bc = int(b1 + (b2 - b1) * t)
-        for col in range(pw):
-            pix[col, row] = (rc, gc, bc, 255)
+        # 1열만 계산 후 가로로 늘리기 (루프 pw배 감소)
+        col_img = Image.new("RGB", (1, ph))
+        pix = col_img.load()
+        for row in range(ph):
+            t = row / max(ph - 1, 1)
+            pix[0, row] = (
+                int(r1 + (r2 - r1) * t),
+                int(g1 + (g2 - g1) * t),
+                int(b1 + (b2 - b1) * t),
+            )
+        img = col_img.resize((pw, ph), Image.NEAREST).convert("RGBA")
 
-    mask = Image.new("L", (pw, ph), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, pw - 1, ph - 1], radius=cr, fill=255)
-    img.putalpha(mask)
+        mask = Image.new("L", (pw, ph), 0)
+        ImageDraw.Draw(mask).rounded_rectangle([0, 0, pw - 1, ph - 1], radius=cr, fill=255)
+        img.putalpha(mask)
 
-    buf = io.BytesIO()
-    img.save(buf, "PNG")
-    buf.seek(0)
-    slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(w), Mm(h))
+        buf = io.BytesIO()
+        img.save(buf, "PNG")
+        _gradient_cache[cache_key] = buf.getvalue()
+
+    slide.shapes.add_picture(io.BytesIO(_gradient_cache[cache_key]), Mm(x), Mm(y), Mm(w), Mm(h))
 
 
 def _hline(slide, x1: float, y: float, x2: float,
