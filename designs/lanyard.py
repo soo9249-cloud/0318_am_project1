@@ -300,59 +300,56 @@ def _draw_D(slide, person: dict, x: float, y: float, w: float, h: float,
     dept_rk = _rank_dept(person)
 
     if event_mode and event_info:
-        # ── 행사 모드: 로고 → 행사명 → 날짜 → (여백) → 이름 → 부서
+        # ── 행사 모드: 고정 존 분리 ──────────────────────────────────
         sz_ev   = SPEC["common"]["event_mode"]["font_size"]
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.30, 32.0)
-        logo_w = w - PAD * 2
-        name_gap = 8.0
+        logo_top = y + hole_offset + 1.0
+        logo_bot = y + h * 0.40        # 로고 존 하단 (전체의 40%)
+        ev_bot   = y + h * 0.58        # 행사 존 하단 (전체의 58%)
+        name_bot = bot_y - 3.0         # 이름+부서 존 하단 (웨이브 위)
 
-        block_h = (logo_h + 3.0 if logo_path or company_name else 0)
-        if ev_name: block_h += _pt_mm(sz_ev) + 2.5
-        if ev_date: block_h += _pt_mm(10) + 2.5
-        block_h += name_gap
-        if name_kr: block_h += _pt_mm(sz_kr) + GAP
-        if name_en: block_h += _pt_mm(sz_en) + GAP
-        if dept_rk: block_h += _pt_mm(sz_dr)
+        logo_zone_h = logo_bot - logo_top
+        logo_w      = w - PAD * 2
 
-        usable_top = y + hole_offset + 4.0
-        usable_h   = bot_y - usable_top - 4.0
-        cy = usable_top + max((usable_h - block_h) / 2, 0)
-
+        # 존 1: 로고
         if logo_path:
             _logo_rect(slide, logo_path,
-                       x + (w - logo_w) / 2, cy, logo_w, logo_h,
-                       bg_hex="#FFFFFF")
-            cy += logo_h + 3.0
+                       x + (w - logo_w) / 2, logo_top,
+                       logo_w, logo_zone_h, bg_hex="#FFFFFF")
         elif company_name:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(11) + 1,
-                 company_name, "kr_bold", 11, "#1E1E1E")
-            cy += _pt_mm(11) + 3.0
+            co_cy = logo_top + (logo_zone_h - _pt_mm(13)) / 2
+            _txt(slide, x + PAD, co_cy, w - PAD * 2, _pt_mm(13) + 1,
+                 company_name, "kr_bold", 13, "#1E1E1E")
 
-        if ev_name:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_ev) + 1,
-                 ev_name, "kr_bold", sz_ev, "#1E1E1E")
-            cy += _pt_mm(sz_ev) + 2.5
-        if ev_date:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(10) + 1,
-                 ev_date, "en_semi", 10, "#505050")
-            cy += _pt_mm(10) + 2.5
+        # 구분선
+        _hline(slide, x + PAD * 2, logo_bot, x + w - PAD * 2, "#DDDDDD", 0.4)
 
-        cy += name_gap
+        # 존 2: 행사명 + 날짜 (수직 중앙)
+        ev_lines = []
+        if ev_name: ev_lines.append((ev_name, "kr_bold", sz_ev, "#1E1E1E", False))
+        if ev_date: ev_lines.append((ev_date, "en_semi", 10,    "#505050", False))
+        ev_zone_h = ev_bot - logo_bot
+        bh_ev = sum(_pt_mm(sz) + 2.0 for _, _, sz, _, _ in ev_lines) - (2.0 if ev_lines else 0)
+        cy = logo_bot + (ev_zone_h - bh_ev) / 2
+        for text, fk, sz, col, caps in ev_lines:
+            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz) + 1,
+                 text, fk, sz, col, all_caps=caps)
+            cy += _pt_mm(sz) + 2.0
 
-        if name_kr:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_kr) + 1,
-                 name_kr, "kr_bold", sz_kr, "#141414")
-            cy += _pt_mm(sz_kr) + GAP
-        if name_en:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_en) + 1,
-                 name_en, "en_bold", sz_en, "#3C3C3C", all_caps=True)
-            cy += _pt_mm(sz_en) + GAP
-        if dept_rk:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_dr) + 1,
-                 dept_rk, "kr_regular", sz_dr, "#505050")
+        # 존 3: 이름 + 부서 (수직 중앙)
+        name_lines = []
+        if name_kr: name_lines.append((name_kr, "kr_bold",    sz_kr, "#141414", False))
+        if name_en: name_lines.append((name_en, "en_bold",    sz_en, "#3C3C3C", True))
+        if dept_rk: name_lines.append((dept_rk, "kr_regular", sz_dr, "#505050", False))
+        name_zone_h = name_bot - ev_bot
+        bh_name = sum(_pt_mm(sz) + GAP for _, _, sz, _, _ in name_lines) - (GAP if name_lines else 0)
+        cy = ev_bot + (name_zone_h - bh_name) / 2
+        for text, fk, sz, col, caps in name_lines:
+            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz) + 1,
+                 text, fk, sz, col, all_caps=caps)
+            cy += _pt_mm(sz) + GAP
 
     else:
         # ── 일반 모드: 로고(중앙 살짝 위) → 이름 → 부서
@@ -408,60 +405,56 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
     dept_rk = _rank_dept(person)
 
     if event_mode and event_info:
-        # ── 행사 모드: 로고 → 행사명 → 날짜 → (여백) → 이름 → 부서
+        # ── 행사 모드: 고정 존 분리 ──────────────────────────────────
         sz_ev   = SPEC["common"]["event_mode"]["font_size"]
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.30, 32.0)
-        logo_w = w - PAD * 2
-        name_gap = 9.0   # 날짜와 이름 사이 큰 여백
+        logo_top = y + hole_offset + 1.0
+        logo_bot = y + h * 0.42        # 로고 존 하단 (전체의 42%)
+        ev_bot   = y + h * 0.62        # 행사 존 하단 (전체의 62%)
+        name_bot = y + h * 0.97        # 이름+부서 존 하단
 
-        # 전체 블록 높이 계산 → 수직 중앙 배치
-        block_h = (logo_h + 3.0 if logo_path or company_name else 0)
-        if ev_name: block_h += _pt_mm(sz_ev) + 2.5
-        if ev_date: block_h += _pt_mm(10) + 2.5
-        block_h += name_gap
-        if name_kr: block_h += _pt_mm(sz_kr) + GAP
-        if name_en: block_h += _pt_mm(sz_en) + GAP
-        if dept_rk: block_h += _pt_mm(sz_dr)
+        logo_zone_h = logo_bot - logo_top
+        logo_w      = w - PAD * 2
 
-        usable_top = y + hole_offset + 4.0
-        usable_h   = h - hole_offset - 4.0 - 6.0   # 하단 6mm 여유
-        cy = usable_top + max((usable_h - block_h) / 2, 0)
-
+        # 존 1: 로고
         if logo_path:
             _logo_rect(slide, logo_path,
-                       x + (w - logo_w) / 2, cy, logo_w, logo_h,
-                       bg_hex=grad_colors[0])
-            cy += logo_h + 3.0
+                       x + (w - logo_w) / 2, logo_top,
+                       logo_w, logo_zone_h, bg_hex=grad_colors[0])
         elif company_name:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(11) + 1,
-                 company_name, "en_semi", 11, "#EEEEEE")
-            cy += _pt_mm(11) + 3.0
+            co_cy = logo_top + (logo_zone_h - _pt_mm(13)) / 2
+            _txt(slide, x + PAD, co_cy, w - PAD * 2, _pt_mm(13) + 1,
+                 company_name, "en_semi", 13, "#FFFFFF")
 
-        if ev_name:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_ev) + 1,
-                 ev_name, "kr_bold", sz_ev, "#FFFFFF")
-            cy += _pt_mm(sz_ev) + 2.5
-        if ev_date:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(10) + 1,
-                 ev_date, "en_semi", 10, "#EEEEEE")
-            cy += _pt_mm(10) + 2.5
+        # 구분선 (반투명 흰색)
+        _hline(slide, x + PAD * 2, logo_bot, x + w - PAD * 2, "#FFFFFF", 0.4)
 
-        cy += name_gap  # 날짜 ↔ 이름 사이 큰 여백
+        # 존 2: 행사명 + 날짜 (수직 중앙)
+        ev_lines = []
+        if ev_name: ev_lines.append((ev_name, "kr_bold", sz_ev, "#FFFFFF", False))
+        if ev_date: ev_lines.append((ev_date, "en_semi", 10,    "#EEEEEE", False))
+        ev_zone_h = ev_bot - logo_bot
+        bh_ev = sum(_pt_mm(sz) + 2.0 for _, _, sz, _, _ in ev_lines) - (2.0 if ev_lines else 0)
+        cy = logo_bot + (ev_zone_h - bh_ev) / 2
+        for text, fk, sz, col, caps in ev_lines:
+            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz) + 1,
+                 text, fk, sz, col, all_caps=caps)
+            cy += _pt_mm(sz) + 2.0
 
-        if name_kr:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_kr) + 1,
-                 name_kr, "kr_bold", sz_kr, "#FFFFFF")
-            cy += _pt_mm(sz_kr) + GAP
-        if name_en:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_en) + 1,
-                 name_en, "en_bold", sz_en, "#EEEEEE", all_caps=True)
-            cy += _pt_mm(sz_en) + GAP
-        if dept_rk:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_dr) + 1,
-                 dept_rk, "kr_regular", sz_dr, "#EEEEEE")
+        # 존 3: 이름 + 부서 (수직 중앙)
+        name_lines = []
+        if name_kr: name_lines.append((name_kr, "kr_bold",    sz_kr, "#FFFFFF", False))
+        if name_en: name_lines.append((name_en, "en_bold",    sz_en, "#EEEEEE", True))
+        if dept_rk: name_lines.append((dept_rk, "kr_regular", sz_dr, "#EEEEEE", False))
+        name_zone_h = name_bot - ev_bot
+        bh_name = sum(_pt_mm(sz) + GAP for _, _, sz, _, _ in name_lines) - (GAP if name_lines else 0)
+        cy = ev_bot + (name_zone_h - bh_name) / 2
+        for text, fk, sz, col, caps in name_lines:
+            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz) + 1,
+                 text, fk, sz, col, all_caps=caps)
+            cy += _pt_mm(sz) + GAP
 
     else:
         # ── 일반 모드: 로고(중앙 살짝 위) → 이름 → 부서
@@ -515,68 +508,58 @@ def _draw_F(slide, person: dict, x: float, y: float, w: float, h: float,
     dept_rk = _rank_dept(person)
 
     if event_mode and event_info:
-        # ── 행사 모드: 흰 상단 바 + 로고 → 행사명 → 날짜 → (여백) → 이름 → 부서
+        # ── 행사 모드: 고정 존 분리 ──────────────────────────────────
         hole_offset = 12.0
-        sz_ev   = SPEC["common"]["event_mode"]["font_size"] * 0.85
+        sz_ev   = SPEC["common"]["event_mode"]["font_size"]
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.30, 32.0)
-        logo_w = w - PAD * 2
-        name_gap = 8.0
+        logo_top = y + hole_offset + 1.0
+        logo_bot = y + h * 0.42        # 로고 존 하단 (전체의 42%)
+        ev_bot   = y + h * 0.60        # 행사 존 하단 (전체의 60%)
+        name_bot = y + h * 0.97        # 이름+부서 존 하단
 
-        block_h = (logo_h + 3.0 if logo_path or company_name else 0)
-        if ev_name: block_h += _pt_mm(sz_ev) + 2.5
-        if ev_date: block_h += _pt_mm(9) + 2.5
-        block_h += name_gap
-        if name_kr: block_h += _pt_mm(sz_kr) + GAP
-        if name_en: block_h += _pt_mm(sz_en) + GAP
-        if dept_rk: block_h += _pt_mm(sz_dr)
+        logo_zone_h = logo_bot - logo_top
+        logo_w      = w - PAD * 2
 
-        # 흰 상단 바 높이 = 로고+행사정보 영역
-        top_h = (logo_h + 3.0 if logo_path or company_name else 0)
-        if ev_name: top_h += _pt_mm(sz_ev) + 2.5
-        if ev_date: top_h += _pt_mm(9) + 2.5
-        top_h = max(top_h + hole_offset + 5.0, h * 0.28)
-        _rect(slide, x, y, w, top_h, "#FFFFFF")
-        _hline(slide, x, y + top_h, x + w, "#DCDCDC", 0.3)
+        # 흰 상단 바 (로고 존 전체)
+        _rect(slide, x, y, w, logo_bot - y, "#FFFFFF")
+        _hline(slide, x, logo_bot, x + w, "#DCDCDC", 0.4)
 
-        usable_top = y + hole_offset + 3.0
-        usable_h   = h - hole_offset - 3.0 - 5.0
-        cy = usable_top + max((usable_h - block_h) / 2, 0)
-
+        # 존 1: 로고
         if logo_path:
             _logo_rect(slide, logo_path,
-                       x + (w - logo_w) / 2, cy, logo_w, logo_h,
-                       bg_hex="#FFFFFF")
-            cy += logo_h + 3.0
+                       x + (w - logo_w) / 2, logo_top,
+                       logo_w, logo_zone_h, bg_hex="#FFFFFF")
         elif company_name:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(10) + 1,
-                 company_name, "kr_bold", 10, bg_hex)
-            cy += _pt_mm(10) + 3.0
+            co_cy = logo_top + (logo_zone_h - _pt_mm(13)) / 2
+            _txt(slide, x + PAD, co_cy, w - PAD * 2, _pt_mm(13) + 1,
+                 company_name, "kr_bold", 13, bg_hex)
 
-        if ev_name:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_ev) + 1,
-                 ev_name, "kr_bold", sz_ev, bg_hex)
-            cy += _pt_mm(sz_ev) + 2.5
-        if ev_date:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(9) + 1,
-                 ev_date, "en_semi", 9, "#646464")
-            cy += _pt_mm(9) + 2.5
+        # 존 2: 행사명 + 날짜 (수직 중앙)
+        ev_lines = []
+        if ev_name: ev_lines.append((ev_name, "kr_bold", sz_ev, "#FFFFFF", False))
+        if ev_date: ev_lines.append((ev_date, "en_semi", 10,    "#EEEEEE", False))
+        ev_zone_h = ev_bot - logo_bot
+        bh_ev = sum(_pt_mm(sz) + 2.0 for _, _, sz, _, _ in ev_lines) - (2.0 if ev_lines else 0)
+        cy = logo_bot + (ev_zone_h - bh_ev) / 2
+        for text, fk, sz, col, caps in ev_lines:
+            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz) + 1,
+                 text, fk, sz, col, all_caps=caps)
+            cy += _pt_mm(sz) + 2.0
 
-        cy += name_gap
-
-        if name_kr:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_kr) + 1,
-                 name_kr, "kr_bold", sz_kr, "#FFFFFF")
-            cy += _pt_mm(sz_kr) + GAP
-        if name_en:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_en) + 1,
-                 name_en, "en_bold", sz_en, "#EEEEEE", all_caps=True)
-            cy += _pt_mm(sz_en) + GAP
-        if dept_rk:
-            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz_dr) + 1,
-                 dept_rk, "kr_regular", sz_dr, "#EEEEEE")
+        # 존 3: 이름 + 부서 (수직 중앙)
+        name_lines = []
+        if name_kr: name_lines.append((name_kr, "kr_bold",    sz_kr, "#FFFFFF", False))
+        if name_en: name_lines.append((name_en, "en_bold",    sz_en, "#EEEEEE", True))
+        if dept_rk: name_lines.append((dept_rk, "kr_regular", sz_dr, "#EEEEEE", False))
+        name_zone_h = name_bot - ev_bot
+        bh_name = sum(_pt_mm(sz) + GAP for _, _, sz, _, _ in name_lines) - (GAP if name_lines else 0)
+        cy = ev_bot + (name_zone_h - bh_name) / 2
+        for text, fk, sz, col, caps in name_lines:
+            _txt(slide, x + PAD, cy, w - PAD * 2, _pt_mm(sz) + 1,
+                 text, fk, sz, col, all_caps=caps)
+            cy += _pt_mm(sz) + GAP
 
     else:
         # ── 일반 모드: 흰 상단 바에 로고, 로고(중앙 살짝 위) → 이름 → 부서
