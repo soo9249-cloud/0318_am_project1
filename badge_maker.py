@@ -455,7 +455,7 @@ def generate_badges(
     try:
         prs = Presentation()
         blank = prs.slide_layouts[6]
-        is_lanyard = badge_type == "목걸이형"
+        is_lanyard = badge_type == "목걸이형" or design in ("D", "E", "F")
 
         if is_lanyard:
             from designs import lanyard as ln
