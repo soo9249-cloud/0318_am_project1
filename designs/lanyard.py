@@ -157,11 +157,21 @@ def _txt(slide, x: float, y: float, w: float, h: float,
 
 
 def _logo_rect(slide, logo_path: Optional[str],
-               x: float, y: float, w: float, h: float) -> bool:
+               x: float, y: float, w: float, h: float,
+               bg_hex: str = "#FFFFFF") -> bool:
+    """로고를 배경색 위에 합성해서 삽입 (투명도 체커보드 방지)."""
     if not logo_path:
         return False
     try:
-        slide.shapes.add_picture(logo_path, Mm(x), Mm(y), Mm(w), Mm(h))
+        from PIL import Image
+        img = Image.open(logo_path).convert("RGBA")
+        r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+        bg = Image.new("RGBA", img.size, (r, g, b, 255))
+        bg.paste(img, mask=img.split()[3])
+        buf = io.BytesIO()
+        bg.convert("RGB").save(buf, "PNG")
+        buf.seek(0)
+        slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(w), Mm(h))
         return True
     except Exception:
         return False
@@ -300,7 +310,8 @@ def _draw_D(slide, person: dict, x: float, y: float, w: float, h: float,
             logo_cy  = y + h * 0.42
             logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
             _logo_rect(slide, logo_path,
-                       x + (w - logo_w) / 2, logo_top, logo_w, logo_h)
+                       x + (w - logo_w) / 2, logo_top, logo_w, logo_h,
+                       bg_hex="#FFFFFF")
             cy = logo_top + logo_h + logo_gap
         else:
             # 로고 없으면 텍스트 블록을 중앙 살짝 아래에서 시작
@@ -350,7 +361,7 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
             logo_w = min(w * 0.5, logo_h * 4)
             _logo_rect(slide, logo_path,
                        x + (w - logo_w) / 2, top_cy - logo_h / 2,
-                       logo_w, logo_h)
+                       logo_w, logo_h, bg_hex=grad_colors[0])
         else:
             company = (company_name or "").strip()
             if company:
@@ -391,7 +402,8 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
             logo_cy  = y + h * 0.42
             logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
             _logo_rect(slide, logo_path,
-                       x + (w - logo_w) / 2, logo_top, logo_w, logo_h)
+                       x + (w - logo_w) / 2, logo_top, logo_w, logo_h,
+                       bg_hex=grad_colors[0])
             cy = logo_top + logo_h + logo_gap
         else:
             cy = y + h * 0.44
@@ -482,7 +494,8 @@ def _draw_F(slide, person: dict, x: float, y: float, w: float, h: float,
             logo_cy  = y + h * 0.42
             logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
             _logo_rect(slide, logo_path,
-                       x + (w - logo_w) / 2, logo_top, logo_w, logo_h)
+                       x + (w - logo_w) / 2, logo_top, logo_w, logo_h,
+                       bg_hex="#FFFFFF")
             cy = logo_top + logo_h + logo_gap
         else:
             cy = y + h * 0.44

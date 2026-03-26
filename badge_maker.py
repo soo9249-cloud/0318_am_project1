@@ -147,19 +147,24 @@ def _txt(slide, x: float, y: float, w: float, h: float,
 
 
 def _logo_circle(slide, logo_path: Optional[str],
-                 x: float, y: float, d: float) -> bool:
-    """원형 크롭 로고 삽입. 로고만 Pillow 사용. 성공 여부 반환."""
+                 x: float, y: float, d: float,
+                 bg_hex: str = "#FFFFFF") -> bool:
+    """원형 크롭 로고 삽입 (배경색 합성). 성공 여부 반환."""
     if not logo_path:
         return False
     try:
         from PIL import Image, ImageDraw
-        px = max(int(d * 12), 4)
+        px   = max(int(d * 12), 4)
         logo = Image.open(logo_path).convert("RGBA").resize((px, px))
+        r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+        bg   = Image.new("RGBA", (px, px), (r, g, b, 255))
+        bg.paste(logo, mask=logo.split()[3])
         mask = Image.new("L", (px, px), 0)
         ImageDraw.Draw(mask).ellipse([0, 0, px - 1, px - 1], fill=255)
-        logo.putalpha(mask)
+        result = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+        result.paste(bg, mask=mask)
         buf = io.BytesIO()
-        logo.save(buf, "PNG")
+        result.save(buf, "PNG")
         buf.seek(0)
         slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(d), Mm(d))
         return True
@@ -168,12 +173,21 @@ def _logo_circle(slide, logo_path: Optional[str],
 
 
 def _logo_rect(slide, logo_path: Optional[str],
-               x: float, y: float, w: float, h: float) -> bool:
-    """로고 이미지 직사각형 삽입. 성공 여부 반환."""
+               x: float, y: float, w: float, h: float,
+               bg_hex: str = "#FFFFFF") -> bool:
+    """로고 이미지 삽입 (배경색 합성, 체커보드 방지). 성공 여부 반환."""
     if not logo_path:
         return False
     try:
-        slide.shapes.add_picture(logo_path, Mm(x), Mm(y), Mm(w), Mm(h))
+        from PIL import Image
+        img = Image.open(logo_path).convert("RGBA")
+        r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+        bg = Image.new("RGBA", img.size, (r, g, b, 255))
+        bg.paste(img, mask=img.split()[3])
+        buf = io.BytesIO()
+        bg.convert("RGB").save(buf, "PNG")
+        buf.seek(0)
+        slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(w), Mm(h))
         return True
     except Exception:
         return False
@@ -216,7 +230,7 @@ def _draw_A(slide, person: dict, x: float, y: float, w: float, h: float,
     circle_d = min(left_w, h) - PAD * 2
     lx = x + (left_w - circle_d) / 2
     ly = y + (h - circle_d) / 2
-    if not _logo_circle(slide, logo_path, lx, ly, circle_d):
+    if not _logo_circle(slide, logo_path, lx, ly, circle_d, bg_hex=bg_hex):
         company = (company_name or "").strip()
         if company:
             _txt(slide, x + PAD * 0.3, y + PAD, left_w - PAD * 0.6, h - PAD * 2,
@@ -304,7 +318,7 @@ def _draw_B(slide, person: dict, x: float, y: float, w: float, h: float,
     if logo_path:
         logo_h = bot_h * 2.5
         logo_w = min(rw, logo_h * 4)
-        _logo_rect(slide, logo_path, x + margin + (rw - logo_w) / 2, cy, logo_w, logo_h)
+        _logo_rect(slide, logo_path, x + margin + (rw - logo_w) / 2, cy, logo_w, logo_h, bg_hex=bg_hex)
     elif company:
         _txt(slide, x + margin, cy, rw, _pt_mm(sz_co) + 1,
              company, "en_semi", sz_co, muted, PP_ALIGN.CENTER, all_caps=True)
@@ -336,7 +350,7 @@ def _draw_C(slide, person: dict, x: float, y: float, w: float, h: float,
     lx = x + GPAD
     ly = y + GPAD
 
-    if not _logo_circle(slide, logo_path, lx, ly, circle_d):
+    if not _logo_circle(slide, logo_path, lx, ly, circle_d, bg_hex=bg_hex):
         # Fallback: 배경보다 약간 밝은 원
         r, g, b = _hex_t(bg_hex)
         dot = "#{:02X}{:02X}{:02X}".format(
