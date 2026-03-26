@@ -305,8 +305,8 @@ def _draw_D(slide, person: dict, x: float, y: float, w: float, h: float,
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.20, 20.0)
-        logo_w = min(w * 0.75, logo_h * 8.0)
+        logo_h = min(h * 0.30, 32.0)
+        logo_w = w - PAD * 2
         name_gap = 8.0
 
         block_h = (logo_h + 3.0 if logo_path or company_name else 0)
@@ -413,8 +413,8 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.22, 22.0)
-        logo_w = min(w * 0.75, logo_h * 8.0)
+        logo_h = min(h * 0.30, 32.0)
+        logo_w = w - PAD * 2
         name_gap = 9.0   # 날짜와 이름 사이 큰 여백
 
         # 전체 블록 높이 계산 → 수직 중앙 배치
@@ -521,8 +521,8 @@ def _draw_F(slide, person: dict, x: float, y: float, w: float, h: float,
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.20, 20.0)
-        logo_w = min(w * 0.75, logo_h * 8.0)
+        logo_h = min(h * 0.30, 32.0)
+        logo_w = w - PAD * 2
         name_gap = 8.0
 
         block_h = (logo_h + 3.0 if logo_path or company_name else 0)
