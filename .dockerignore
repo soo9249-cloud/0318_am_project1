@@ -1,6 +1,7 @@
-output/
+venv/
 __pycache__/
 *.pyc
-.env
-venv/
+output/
+.git/
 .claude/
+*.bak
