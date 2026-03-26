@@ -15,8 +15,7 @@ SPEC = json.loads(SPEC_PATH.read_text(encoding="utf-8"))
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "index.html", {
         "spec": SPEC,
     })
 
