@@ -1,0 +1,136 @@
+{
+  "badge": {
+    "A": {
+      "name": "Classic",
+      "layout": "logo_left_text_right",
+      "logo_area": "20%_left_circle",
+      "divider": "vertical",
+      "text": {
+        "name_kr":   {"size": 14, "weight": "bold",   "font": "kr_bold"},
+        "name_en":   {"size": 8,  "caps": true,        "font": "en_bold"},
+        "rank_dept": {"size": 7,                       "font": "en_regular"}
+      },
+      "colors": {
+        "Gold":     {"bg": "#C9A84C", "text": "#1A1A2E"},
+        "RoseGold": {"bg": "#D4A0A7", "text": "#1A1A2E"},
+        "Silver":   {"bg": "#C0C0C0", "text": "#1A1A2E"},
+        "Black":    {"bg": "#1A1A1A", "text": "#F5F5F5"}
+      }
+    },
+    "B": {
+      "name": "Centered",
+      "layout": "all_centered",
+      "divider": "horizontal",
+      "divider_margin": "15%",
+      "text": {
+        "name_kr": {"size": 16, "weight": "bold", "align": "center", "font": "kr_bold"},
+        "name_en": {"size": 9,  "caps": true,     "align": "center", "font": "en_bold"},
+        "rank":    {"size": 8,                    "align": "center", "font": "en_regular"},
+        "company": {"size": 7,  "caps": true,     "align": "center", "font": "en_semi"}
+      },
+      "colors": {
+        "Gold":     {"bg": "#C9A84C", "text": "#1A1A2E"},
+        "RoseGold": {"bg": "#D4A0A7", "text": "#1A1A2E"},
+        "Silver":   {"bg": "#C0C0C0", "text": "#1A1A2E"},
+        "Black":    {"bg": "#1A1A1A", "text": "#F5F5F5"}
+      }
+    },
+    "C": {
+      "name": "Modern",
+      "layout": "logo_left_text_right_minimal",
+      "logo": "circle_left",
+      "fallback_logo": "color_dot",
+      "spacing": "generous",
+      "text": {
+        "name_kr": {"size": 15, "weight": "bold", "font": "kr_bold"},
+        "rank":    {"size": 8,                    "font": "en_regular"},
+        "dept":    {"size": 7,  "muted": true,    "font": "en_regular"}
+      },
+      "colors": {
+        "Gold":     {"bg": "#C9A84C", "text": "#1A1A2E"},
+        "RoseGold": {"bg": "#D4A0A7", "text": "#1A1A2E"},
+        "Silver":   {"bg": "#C0C0C0", "text": "#1A1A2E"},
+        "Black":    {"bg": "#1A1A1A", "text": "#F5F5F5"}
+      }
+    }
+  },
+  "lanyard": {
+    "D": {
+      "name": "Wave Corporate",
+      "bg": "white",
+      "zones": {
+        "top":    {"height": "30%", "content": "logo_or_company"},
+        "mid":    {"height": "45%", "content": "name_dept_rank"},
+        "bottom": {"height": "25%", "content": "wave_with_company"}
+      },
+      "wave_colors": {
+        "Coral":    "#FF6B6B",
+        "Mint":     "#4ECDC4",
+        "Sky":      "#45B7D1",
+        "Lavender": "#A8A4E6"
+      },
+      "text": {
+        "name_kr":   {"size": 28, "weight": "bold", "font": "kr_bold"},
+        "name_en":   {"size": 14,                   "font": "en_bold"},
+        "dept_rank": {"size": 12,                   "font": "kr_regular"},
+        "company":   {"size": 10, "color": "white", "font": "en_semi"}
+      }
+    },
+    "E": {
+      "name": "Gradient Vivid",
+      "bg": "gradient_pillow",
+      "gradients": {
+        "CoralPurple": ["#FF6B9D", "#C44569"],
+        "MintBlue":    ["#43E97B", "#38F9D7"],
+        "SkyIndigo":   ["#667EEA", "#764BA2"],
+        "PeachGold":   ["#F7971E", "#FFD200"]
+      },
+      "text_color": "white",
+      "text": {
+        "name_kr":   {"size": 30, "weight": "bold", "font": "kr_bold"},
+        "name_en":   {"size": 14,                   "font": "en_bold"},
+        "dept_rank": {"size": 12,                   "font": "kr_regular"}
+      }
+    },
+    "F": {
+      "name": "Bold Solid",
+      "bg": "solid_bright",
+      "bg_colors": {
+        "SkyBlue":  "#5BC0EB",
+        "Coral":    "#FF6B6B",
+        "Mint":     "#00B4D8",
+        "Lavender": "#9B5DE5"
+      },
+      "zones": {
+        "top_bar": {"height": "20%", "bg": "white",  "content": "logo_or_company"},
+        "mid":     {"height": "55%",                 "content": "name_kr_name_en"},
+        "bottom":  {"height": "25%",                 "content": "dept_rank"}
+      },
+      "text_color": "white",
+      "text": {
+        "name_kr":   {"size": 32, "weight": "bold", "font": "kr_bold"},
+        "name_en":   {"size": 14,                   "font": "en_bold"},
+        "dept_rank": {"size": 12,                   "font": "kr_regular"}
+      }
+    }
+  },
+  "common": {
+    "fonts": {
+      "kr_bold":    "fonts/NotoSerifKR-Bold.ttf",
+      "kr_regular": "fonts/NotoSansKR-Regular.ttf",
+      "en_bold":    "fonts/Montserrat-Bold.ttf",
+      "en_regular": "fonts/Montserrat-Regular.ttf",
+      "en_semi":    "fonts/Montserrat-SemiBold.ttf"
+    },
+    "hole":          {"position": "top_center", "radius_mm": 4},
+    "corner_radius": 8,
+    "cut_line":      "dashed",
+    "logo_fallback": "company_name_text",
+    "event_mode": {
+      "fields":    ["event_name", "event_date"],
+      "position":  "top_zone",
+      "font":      "kr_bold",
+      "font_size": 16
+    }
+  }
+}

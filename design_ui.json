@@ -1,0 +1,250 @@
+{
+  "meta": {
+    "style": "Modern Glassmorphism Dashboard",
+    "reference": "Learner-style soft gradient UI",
+    "target": "명찰 자동 생성기 NiceGUI 대시보드"
+  },
+
+  "palette": {
+    "page_bg_gradient": ["#E8D5F5", "#F5D0E8", "#D5E8F5"],
+    "page_bg_angle": "135deg",
+    "card_bg": "#FFFFFF",
+    "card_bg_secondary": "#F8F7FF",
+    "text_primary": "#1A1A2E",
+    "text_secondary": "#6B7280",
+    "text_muted": "#9CA3AF",
+    "accent_purple": "#7C3AED",
+    "accent_pink": "#EC4899",
+    "accent_teal": "#14B8A6",
+    "accent_blue": "#3B82F6",
+    "border_light": "#F0EEF8",
+    "white": "#FFFFFF",
+
+    "gradient_cards": [
+      {"name": "purple_pink", "from": "#A855F7", "to": "#EC4899"},
+      {"name": "pink_orange", "from": "#F472B6", "to": "#FB923C"},
+      {"name": "teal_blue",   "from": "#2DD4BF", "to": "#60A5FA"}
+    ],
+
+    "button_primary_gradient": ["#7C3AED", "#A855F7"],
+    "button_hover_gradient":   ["#6D28D9", "#9333EA"]
+  },
+
+  "typography": {
+    "font_family": "Inter, 'Noto Sans KR', sans-serif",
+    "google_fonts_url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+    "sizes": {
+      "hero_title":    {"size": "28px", "weight": 800, "letter_spacing": "-0.5px"},
+      "section_title": {"size": "13px", "weight": 700, "letter_spacing": "0.08em", "transform": "uppercase", "color": "text_secondary"},
+      "card_title":    {"size": "15px", "weight": 700},
+      "card_desc":     {"size": "12px", "weight": 400, "color": "text_secondary"},
+      "label":         {"size": "13px", "weight": 500},
+      "body":          {"size": "14px", "weight": 400},
+      "small":         {"size": "12px", "weight": 400, "color": "text_muted"}
+    }
+  },
+
+  "spacing": {
+    "page_padding":   "32px",
+    "card_padding":   "24px",
+    "section_gap":    "20px",
+    "element_gap":    "12px",
+    "small_gap":      "8px"
+  },
+
+  "radius": {
+    "page":    "24px",
+    "card":    "20px",
+    "button":  "12px",
+    "badge":   "8px",
+    "circle":  "9999px"
+  },
+
+  "shadows": {
+    "card":        "0 2px 16px rgba(124,58,237,0.08)",
+    "card_hover":  "0 8px 32px rgba(124,58,237,0.15)",
+    "button":      "0 4px 12px rgba(124,58,237,0.30)"
+  },
+
+  "components": {
+
+    "page_wrapper": {
+      "background": "linear-gradient(135deg, #E8D5F5 0%, #F5D0E8 50%, #D5E8F5 100%)",
+      "min_height":  "100vh",
+      "padding":     "32px"
+    },
+
+    "header_card": {
+      "background":     "linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #EC4899 100%)",
+      "border_radius":  "20px",
+      "padding":        "28px 32px",
+      "color":          "#FFFFFF",
+      "title_size":     "26px",
+      "title_weight":   800,
+      "subtitle_size":  "14px",
+      "subtitle_color": "rgba(255,255,255,0.75)",
+      "icon":           "🪪"
+    },
+
+    "step_card": {
+      "background":    "#FFFFFF",
+      "border_radius": "20px",
+      "padding":       "24px",
+      "shadow":        "0 2px 16px rgba(124,58,237,0.08)",
+      "border":        "1px solid #F0EEF8"
+    },
+
+    "step_badge": {
+      "background":    "linear-gradient(135deg, #7C3AED, #A855F7)",
+      "color":         "#FFFFFF",
+      "size":          "28px",
+      "border_radius": "9999px",
+      "font_size":     "13px",
+      "font_weight":   700
+    },
+
+    "upload_zone": {
+      "background":      "#FAFAFA",
+      "border":          "2px dashed #D8B4FE",
+      "border_radius":   "16px",
+      "padding":         "20px",
+      "hover_border":    "2px dashed #7C3AED",
+      "hover_bg":        "#F5F0FF",
+      "icon_size":       "32px",
+      "text":            "클릭하거나 파일을 드래그하세요",
+      "text_color":      "#7C3AED",
+      "subtext":         ".xlsx / .png .jpg",
+      "subtext_color":   "#9CA3AF"
+    },
+
+    "preview_table": {
+      "header_bg":      "#F5F0FF",
+      "header_color":   "#7C3AED",
+      "header_size":    "12px",
+      "row_hover_bg":   "#FAFAFA",
+      "border_color":   "#F0EEF8",
+      "border_radius":  "12px"
+    },
+
+    "tab_bar": {
+      "active_color":       "#7C3AED",
+      "active_bg":          "#F5F0FF",
+      "inactive_color":     "#6B7280",
+      "indicator_color":    "#7C3AED",
+      "border_radius":      "12px",
+      "padding":            "8px 20px"
+    },
+
+    "toggle_button": {
+      "active_bg":          "linear-gradient(135deg, #7C3AED, #A855F7)",
+      "active_color":       "#FFFFFF",
+      "active_shadow":      "0 4px 12px rgba(124,58,237,0.30)",
+      "inactive_bg":        "#F5F0FF",
+      "inactive_color":     "#6B7280",
+      "border_radius":      "10px",
+      "padding":            "8px 16px",
+      "font_size":          "13px",
+      "font_weight":        600
+    },
+
+    "color_swatch": {
+      "size":           "32px",
+      "border_radius":  "9999px",
+      "selected_ring":  "3px solid #7C3AED",
+      "ring_offset":    "2px",
+      "colors": {
+        "Gold":     "#C9A84C",
+        "RoseGold": "#D4A0A7",
+        "Silver":   "#A8A9AD",
+        "Black":    "#1A1A1A"
+      }
+    },
+
+    "design_card": {
+      "background":        "#FFFFFF",
+      "border":            "2px solid #F0EEF8",
+      "border_radius":     "16px",
+      "padding":           "16px",
+      "width":             "160px",
+      "hover_border":      "2px solid #A855F7",
+      "hover_shadow":      "0 4px 20px rgba(168,85,247,0.15)",
+      "selected_border":   "2px solid #7C3AED",
+      "selected_bg":       "#F5F0FF",
+      "selected_shadow":   "0 4px 20px rgba(124,58,237,0.20)",
+      "preview_height":    "60px",
+      "preview_radius":    "10px",
+      "title_size":        "13px",
+      "title_weight":      700,
+      "desc_size":         "11px",
+      "check_icon_color":  "#7C3AED",
+
+      "preview_gradients": {
+        "A": {"bg": "#C9A84C", "style": "badge_classic"},
+        "B": {"bg": "#A8A9AD", "style": "badge_centered"},
+        "C": {"bg": "#1A1A1A", "style": "badge_modern"},
+        "D": {"bg": "linear-gradient(180deg,#FFFFFF 70%,#FF6B6B 70%)", "style": "lanyard_wave"},
+        "E": {"bg": "linear-gradient(135deg,#FF6B9D,#C44569)", "style": "lanyard_gradient"},
+        "F": {"bg": "#5BC0EB", "style": "lanyard_solid"}
+      }
+    },
+
+    "generate_button": {
+      "background":    "linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #EC4899 100%)",
+      "color":         "#FFFFFF",
+      "border_radius": "14px",
+      "padding":       "16px 32px",
+      "font_size":     "16px",
+      "font_weight":   700,
+      "shadow":        "0 8px 24px rgba(124,58,237,0.35)",
+      "hover_shadow":  "0 12px 32px rgba(124,58,237,0.45)",
+      "width":         "100%",
+      "icon":          "✨"
+    },
+
+    "download_card": {
+      "background":    "linear-gradient(135deg, #F0FDF4, #DCFCE7)",
+      "border":        "1px solid #86EFAC",
+      "border_radius": "20px",
+      "padding":       "24px",
+      "icon_color":    "#16A34A",
+      "title_color":   "#15803D",
+      "button_bg":     "linear-gradient(135deg, #16A34A, #22C55E)",
+      "button_color":  "#FFFFFF",
+      "button_radius": "12px"
+    },
+
+    "notify_success": {
+      "bg":           "#F0FDF4",
+      "border":       "#86EFAC",
+      "text":         "#15803D"
+    },
+    "notify_error": {
+      "bg":           "#FFF1F2",
+      "border":       "#FDA4AF",
+      "text":         "#BE123C"
+    },
+    "notify_warning": {
+      "bg":           "#FFFBEB",
+      "border":       "#FCD34D",
+      "text":         "#92400E"
+    }
+  },
+
+  "css_variables": {
+    "--primary":        "#7C3AED",
+    "--primary-light":  "#A855F7",
+    "--accent":         "#EC4899",
+    "--bg-gradient":    "linear-gradient(135deg, #E8D5F5 0%, #F5D0E8 50%, #D5E8F5 100%)",
+    "--card-shadow":    "0 2px 16px rgba(124,58,237,0.08)",
+    "--radius-card":    "20px",
+    "--radius-btn":     "12px"
+  },
+
+  "nicegui_classes": {
+    "page_container":    "min-h-screen p-8",
+    "max_width_wrapper": "max-w-3xl mx-auto flex flex-col gap-5",
+    "card_base":         "w-full rounded-2xl shadow-sm border border-purple-50",
+    "section_title":     "text-xs font-bold text-gray-400 uppercase tracking-widest mb-3",
+    "label_text":        "text-sm font-medium text-gray-600"
+  }
+}
