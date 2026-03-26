@@ -55,6 +55,11 @@ def _pt_mm(pt: float) -> float:
     return pt * 25.4 / 72
 
 
+def _ev_font_key(text: str) -> str:
+    """행사명이 한국어 포함이면 kr_bold, 영어/숫자만이면 en_semi (자간 과다 방지)."""
+    return "kr_bold" if any('\uAC00' <= c <= '\uD7A3' for c in text) else "en_semi"
+
+
 def _rank_dept(person: dict, sep: str = " · ") -> str:
     rank = (person.get("rank") or "").strip()
     dept = (person.get("dept") or "").strip()
@@ -328,7 +333,7 @@ def _draw_D(slide, person: dict, x: float, y: float, w: float, h: float,
 
         # 존 2: 행사명 + 날짜 (수직 중앙)
         ev_lines = []
-        if ev_name: ev_lines.append((ev_name, "kr_bold", sz_ev, "#1E1E1E", False))
+        if ev_name: ev_lines.append((ev_name, _ev_font_key(ev_name), sz_ev, "#1E1E1E", False))
         if ev_date: ev_lines.append((ev_date, "en_semi", 10,    "#505050", False))
         ev_zone_h = ev_bot - logo_bot
         bh_ev = sum(_pt_mm(sz) + 2.0 for _, _, sz, _, _ in ev_lines) - (2.0 if ev_lines else 0)
@@ -433,7 +438,7 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
 
         # 존 2: 행사명 + 날짜 (수직 중앙)
         ev_lines = []
-        if ev_name: ev_lines.append((ev_name, "kr_bold", sz_ev, "#FFFFFF", False))
+        if ev_name: ev_lines.append((ev_name, _ev_font_key(ev_name), sz_ev, "#FFFFFF", False))
         if ev_date: ev_lines.append((ev_date, "en_semi", 10,    "#EEEEEE", False))
         ev_zone_h = ev_bot - logo_bot
         bh_ev = sum(_pt_mm(sz) + 2.0 for _, _, sz, _, _ in ev_lines) - (2.0 if ev_lines else 0)
@@ -538,7 +543,7 @@ def _draw_F(slide, person: dict, x: float, y: float, w: float, h: float,
 
         # 존 2: 행사명 + 날짜 (수직 중앙)
         ev_lines = []
-        if ev_name: ev_lines.append((ev_name, "kr_bold", sz_ev, "#FFFFFF", False))
+        if ev_name: ev_lines.append((ev_name, _ev_font_key(ev_name), sz_ev, "#FFFFFF", False))
         if ev_date: ev_lines.append((ev_date, "en_semi", 10,    "#EEEEEE", False))
         ev_zone_h = ev_bot - logo_bot
         bh_ev = sum(_pt_mm(sz) + 2.0 for _, _, sz, _, _ in ev_lines) - (2.0 if ev_lines else 0)
