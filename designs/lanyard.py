@@ -263,18 +263,33 @@ def _draw_D(slide, person: dict, x: float, y: float, w: float, h: float,
     dept_rk = _rank_dept(person)
 
     if event_mode and event_info:
-        # ── 행사 모드: 상단(행사정보) / 중단(이름) 구조 유지
+        # ── 행사 모드: 상단(로고+행사정보) / 중단(이름) 구조
         top_h = h * 0.28
         mid_h = bot_y - (y + top_h)
         mid_y = y + top_h
-        top_cy = y + hole_offset + (top_h - hole_offset) / 2
 
         _hline(slide, x + PAD * 2, mid_y, x + w - PAD * 2, "#E0E0E0", 0.4)
 
         sz_ev   = SPEC["common"]["event_mode"]["font_size"]
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
-        ey = top_cy - (_pt_mm(sz_ev) + (GAP + _pt_mm(sz_ev * 0.75) if ev_date else 0)) / 2
+
+        top_cy = y + hole_offset + (top_h - hole_offset) / 2
+        if logo_path:
+            logo_h = min((top_h - hole_offset) * 0.42, 13.0)
+            logo_w = min(w * 0.50, logo_h * 4.0)
+            logo_y = y + hole_offset + 1.0
+            _logo_rect(slide, logo_path,
+                       x + (w - logo_w) / 2, logo_y, logo_w, logo_h,
+                       bg_hex="#FFFFFF")
+            ey = logo_y + logo_h + 1.5
+        elif company_name:
+            _txt(slide, x + PAD, top_cy - _pt_mm(11) / 2, w - PAD * 2,
+                 _pt_mm(11) + 1, company_name, "kr_bold", 11, "#1E1E1E")
+            ey = top_cy + _pt_mm(11) / 2 + 1.5
+        else:
+            ey = top_cy - (_pt_mm(sz_ev) + (GAP + _pt_mm(sz_ev * 0.75) if ev_date else 0)) / 2
+
         if ev_name:
             _txt(slide, x + PAD, ey, w - PAD * 2, _pt_mm(sz_ev) + 1,
                  ev_name, "kr_bold", sz_ev, "#1E1E1E")
@@ -305,16 +320,18 @@ def _draw_D(slide, person: dict, x: float, y: float, w: float, h: float,
         if name_en: lines.append((name_en, "en_bold",    sz_en, "#3C3C3C", True))
         if dept_rk: lines.append((dept_rk, "kr_regular", sz_dr, "#505050", False))
 
+        logo_cy  = y + h * 0.42
+        logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
         if logo_path:
-            # 로고 중앙을 badge 높이의 42% 지점에 배치 (중앙보다 살짝 위)
-            logo_cy  = y + h * 0.42
-            logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
             _logo_rect(slide, logo_path,
                        x + (w - logo_w) / 2, logo_top, logo_w, logo_h,
                        bg_hex="#FFFFFF")
             cy = logo_top + logo_h + logo_gap
+        elif company_name:
+            _txt(slide, x + PAD, logo_top + (logo_h - _pt_mm(13)) / 2, w - PAD * 2,
+                 _pt_mm(13) + 1, company_name, "kr_bold", 13, "#1E1E1E")
+            cy = logo_top + logo_h + logo_gap
         else:
-            # 로고 없으면 텍스트 블록을 중앙 살짝 아래에서 시작
             cy = y + h * 0.44
 
         for text, fk, sz, col, caps in lines:
@@ -398,12 +415,16 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
         if name_en: lines.append((name_en, "en_bold",    sz_en, "#EEEEEE", True))
         if dept_rk: lines.append((dept_rk, "kr_regular", sz_dr, "#EEEEEE", False))
 
+        logo_cy  = y + h * 0.42
+        logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
         if logo_path:
-            logo_cy  = y + h * 0.42
-            logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
             _logo_rect(slide, logo_path,
                        x + (w - logo_w) / 2, logo_top, logo_w, logo_h,
                        bg_hex=grad_colors[0])
+            cy = logo_top + logo_h + logo_gap
+        elif company_name:
+            _txt(slide, x + PAD, logo_top + (logo_h - _pt_mm(13)) / 2, w - PAD * 2,
+                 _pt_mm(13) + 1, company_name, "kr_bold", 13, "#FFFFFF")
             cy = logo_top + logo_h + logo_gap
         else:
             cy = y + h * 0.44
@@ -435,21 +456,37 @@ def _draw_F(slide, person: dict, x: float, y: float, w: float, h: float,
     dept_rk = _rank_dept(person)
 
     if event_mode and event_info:
-        # ── 행사 모드: 흰 상단 바(행사정보) + 중단(이름) + 하단(부서) 기존 구조 유지
-        top_h = h * 0.22
-        mid_h = h * 0.53
+        # ── 행사 모드: 흰 상단 바(로고/회사명+행사정보) + 중단(이름) + 하단(부서)
+        top_h = h * 0.30
+        mid_h = h * 0.45
         bot_h = h - top_h - mid_h
         mid_y = y + top_h
         bot_y = mid_y + mid_h
+        hole_offset = 12.0
 
         _rect(slide, x, y, w, top_h, "#FFFFFF")
         _hline(slide, x, mid_y, x + w, "#DCDCDC", 0.3)
 
-        top_cy = y + top_h / 2
         sz_ev   = SPEC["common"]["event_mode"]["font_size"] * 0.85
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
-        ey = top_cy - _pt_mm(sz_ev) / 2
+
+        if logo_path:
+            logo_h = min((top_h - hole_offset) * 0.40, 12.0)
+            logo_w = min(w * 0.50, logo_h * 4.0)
+            logo_y = y + hole_offset + 1.0
+            _logo_rect(slide, logo_path,
+                       x + (w - logo_w) / 2, logo_y, logo_w, logo_h,
+                       bg_hex="#FFFFFF")
+            ey = logo_y + logo_h + 1.0
+        elif company_name:
+            co_y = y + hole_offset + 1.0
+            _txt(slide, x + PAD, co_y, w - PAD * 2, _pt_mm(10) + 1,
+                 company_name, "kr_bold", 10, bg_hex)
+            ey = co_y + _pt_mm(10) + 1.5
+        else:
+            ey = y + hole_offset + (top_h - hole_offset) / 2 - _pt_mm(sz_ev) / 2
+
         if ev_name:
             _txt(slide, x + PAD, ey, w - PAD * 2, _pt_mm(sz_ev) + 1,
                  ev_name, "kr_bold", sz_ev, bg_hex)
@@ -490,12 +527,16 @@ def _draw_F(slide, person: dict, x: float, y: float, w: float, h: float,
         if name_en: lines.append((name_en, "en_bold",    sz_en, "#EEEEEE", True))
         if dept_rk: lines.append((dept_rk, "kr_regular", sz_dr, "#EEEEEE", False))
 
+        logo_cy  = y + h * 0.42
+        logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
         if logo_path:
-            logo_cy  = y + h * 0.42
-            logo_top = max(logo_cy - logo_h / 2, y + hole_offset + 2.0)
             _logo_rect(slide, logo_path,
                        x + (w - logo_w) / 2, logo_top, logo_w, logo_h,
                        bg_hex="#FFFFFF")
+            cy = logo_top + logo_h + logo_gap
+        elif company_name:
+            _txt(slide, x + PAD, logo_top + (logo_h - _pt_mm(13)) / 2, w - PAD * 2,
+                 _pt_mm(13) + 1, company_name, "kr_bold", 13, bg_hex)
             cy = logo_top + logo_h + logo_gap
         else:
             cy = y + h * 0.44
