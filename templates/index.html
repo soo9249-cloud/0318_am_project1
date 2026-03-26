@@ -489,14 +489,6 @@ input:checked + .slider:before { transform: translateX(18px); }
             <button class="toggle-btn" onclick="setOpt('badgeLayout', 'A4에 12개', this)">A4에 12개</button>
           </div>
 
-          <div class="swatch-row">
-            <label><i data-lucide="droplets" style="width:14px;height:14px"></i> 색상</label>
-            <div class="swatch active" style="background:#C9A84C" onclick="setColor('Gold', this)" title="Gold"></div>
-            <div class="swatch" style="background:#D4A0A7" onclick="setColor('RoseGold', this)" title="RoseGold"></div>
-            <div class="swatch" style="background:#A8A9AD" onclick="setColor('Silver', this)" title="Silver"></div>
-            <div class="swatch" style="background:#1A1A1A" onclick="setColor('Black', this)" title="Black"></div>
-            <span class="swatch-name" id="color-name">Gold</span>
-          </div>
         </div>
 
         <!-- 목걸이형 설정 -->
@@ -535,6 +527,18 @@ input:checked + .slider:before { transform: translateX(18px); }
 
         <div class="section-title">디자인 선택</div>
         <div class="design-cards" id="design-cards"></div>
+
+        <!-- 뱃지형 색상 (디자인 선택 후 표시) -->
+        <div id="badge-color-section" style="display:none; margin-top:16px">
+          <div class="swatch-row">
+            <label><i data-lucide="droplets" style="width:14px;height:14px"></i> 색상</label>
+            <div class="swatch active" style="background:#C9A84C" onclick="setColor('Gold', this)" title="Gold"></div>
+            <div class="swatch" style="background:#D4A0A7" onclick="setColor('RoseGold', this)" title="RoseGold"></div>
+            <div class="swatch" style="background:#A8A9AD" onclick="setColor('Silver', this)" title="Silver"></div>
+            <div class="swatch" style="background:#1A1A1A" onclick="setColor('Black', this)" title="Black"></div>
+            <span class="swatch-name" id="color-name">Gold</span>
+          </div>
+        </div>
 
         <div id="lanyard-color-section" style="display:none; margin-top:20px">
           <div class="input-label">
@@ -653,7 +657,9 @@ function setBadgeType(type) {
   document.getElementById('type-badge').classList.toggle('active', type === 'badge');
   document.getElementById('type-lanyard').classList.toggle('active', type === 'lanyard');
   state.design = null;
+  state.color = type === 'badge' ? 'Gold' : '';
   document.getElementById('lanyard-color-section').style.display = 'none';
+  document.getElementById('badge-color-section').style.display = 'none';
   renderDesignCards();
 }
 
@@ -717,10 +723,13 @@ function renderDesignCards() {
 function selectDesign(key) {
   state.design = key;
   if (state.badgeType === 'badge') {
-    state.color = 'Gold';
-    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-    document.querySelector('.swatch[title="Gold"]')?.classList.add('active');
-    document.getElementById('color-name').textContent = 'Gold';
+    // 색상 초기화 없이 색상 섹션만 표시 (이미 선택된 색상 유지)
+    document.getElementById('badge-color-section').style.display = 'block';
+    if (!state.color) {
+      state.color = 'Gold';
+      document.querySelector('.swatch[title="Gold"]')?.classList.add('active');
+      document.getElementById('color-name').textContent = 'Gold';
+    }
   } else {
     updateLanyardColors(key);
   }
