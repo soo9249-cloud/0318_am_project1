@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
+from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Mm, Pt
@@ -395,3 +396,121 @@ def place_on_slide(
         ty = margin_y + row * (bh + GAP_Y)
         draw_fn(slide, person, lx, ty, bw, bh, bg_hex, txt_hex, logo_path, company_name)
         _cutline(slide, lx, ty, bw, bh)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 엑셀 읽기
+# ═══════════════════════════════════════════════════════════════════════════════
+def read_excel(path: str) -> list[dict]:
+    """엑셀 파일을 읽어 사람 목록 반환. 실패 시 [{"error": "..."}]."""
+    try:
+        import openpyxl
+        wb = openpyxl.load_workbook(path, data_only=True)
+        ws = wb.active
+
+        headers = [str(cell.value or "").strip() for cell in ws[1]]
+        KEY_MAP = {
+            "이름": "name_kr", "한글이름": "name_kr", "name_kr": "name_kr",
+            "영문이름": "name_en", "영어이름": "name_en", "영문": "name_en", "name_en": "name_en",
+            "직급": "rank", "직위": "rank", "rank": "rank",
+            "부서": "dept", "부서명": "dept", "department": "dept", "dept": "dept",
+            "회사": "company", "회사명": "company", "company": "company",
+        }
+        col_keys = [KEY_MAP.get(h.lower(), h.lower()) for h in headers]
+
+        people = []
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            person = {col_keys[i]: str(v or "").strip()
+                      for i, v in enumerate(row) if i < len(col_keys)}
+            if any(person.values()):
+                people.append(person)
+
+        if not people:
+            return [{"error": "데이터가 없습니다. 엑셀 파일을 확인해주세요."}]
+        return people
+    except Exception as e:
+        return [{"error": f"엑셀 읽기 실패: {e}"}]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PPTX 생성
+# ═══════════════════════════════════════════════════════════════════════════════
+def generate_badges(
+    people:       list[dict],
+    logo_path:    Optional[str],
+    company_name: str,
+    badge_type:   str,
+    design:       str,
+    color:        str,
+    size:         str,
+    layout:       str,
+    event_mode:   bool,
+    event_info:   Optional[dict],
+    output_dir:   str,
+) -> Optional[str]:
+    """PPTX 생성 후 파일 경로 반환. 실패 시 None."""
+    import traceback
+    from datetime import datetime
+
+    try:
+        prs = Presentation()
+        blank = prs.slide_layouts[6]
+        is_lanyard = badge_type == "목걸이형"
+
+        if is_lanyard:
+            from designs import lanyard as ln
+
+            badge_size   = ln.LANYARD_SIZES.get(size, (90.0, 120.0))
+            is_landscape = (size == "대형 103×133mm")
+
+            if is_landscape:
+                slide_w, slide_h = 297.0, 210.0
+                layout_key = "대형_2개"
+            else:
+                slide_w, slide_h = 210.0, 297.0
+                # UI에서 "일반_2개" / "일반_4개" 로 전달되지 않으면 기본값 사용
+                layout_key = layout if layout in ln.LANYARD_LAYOUTS else "일반_2개"
+
+            prs.slide_width  = Mm(slide_w)
+            prs.slide_height = Mm(slide_h)
+
+            cols, rows = ln.LANYARD_LAYOUTS[layout_key]
+            per_page   = cols * rows
+
+            for start in range(0, len(people), per_page):
+                batch = people[start: start + per_page]
+                slide = prs.slides.add_slide(blank)
+                ln.place_on_slide(
+                    slide, batch, layout_key, badge_size,
+                    design, color, logo_path, company_name,
+                    event_mode, event_info,
+                    slide_w=slide_w, slide_h=slide_h,
+                )
+        else:
+            badge_size = BADGE_SIZES.get(size, (80.0, 25.0))
+            prs.slide_width  = Mm(A4_W)
+            prs.slide_height = Mm(A4_H)
+
+            cols, rows = BADGE_LAYOUTS.get(layout, (2, 4))
+            per_page   = cols * rows
+
+            for start in range(0, len(people), per_page):
+                batch = people[start: start + per_page]
+                slide = prs.slides.add_slide(blank)
+                place_on_slide(slide, batch, layout, badge_size,
+                               design, color, logo_path, company_name)
+
+        ts       = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_path = str(Path(output_dir) / f"badges_{ts}.pptx")
+        prs.save(out_path)
+
+        try:
+            from font_embed import embed_fonts
+            embed_fonts(out_path, BASE_DIR / "fonts")
+        except Exception:
+            pass
+
+        return out_path
+    except Exception:
+        traceback.print_exc()
+        return None
