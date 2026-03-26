@@ -96,24 +96,34 @@ def _oval(slide, x: float, y: float, w: float, h: float,
     return shape
 
 
-def _set_gradient(shape, hex1: str, hex2: str, angle_60k: int = 5400000):
-    """수직 그라데이션 fill (XML 직접 조작)."""
-    spPr = shape._element.spPr
-    A = "http://schemas.openxmlformats.org/drawingml/2006/main"
-    for child in list(spPr):
-        tag = child.tag.split("}")[-1]
-        if tag in ("solidFill", "gradFill", "noFill", "blipFill", "pattFill"):
-            spPr.remove(child)
-    gf  = etree.SubElement(spPr, f"{{{A}}}gradFill")
-    gsl = etree.SubElement(gf,  f"{{{A}}}gsLst")
-    gs1 = etree.SubElement(gsl, f"{{{A}}}gs"); gs1.set("pos", "0")
-    etree.SubElement(gs1, f"{{{A}}}srgbClr").set("val", hex1.lstrip("#"))
-    gs2 = etree.SubElement(gsl, f"{{{A}}}gs"); gs2.set("pos", "100000")
-    etree.SubElement(gs2, f"{{{A}}}srgbClr").set("val", hex2.lstrip("#"))
-    lin = etree.SubElement(gf, f"{{{A}}}lin")
-    lin.set("ang", str(angle_60k))
-    lin.set("scaled", "0")
-    shape.line.fill.background()
+def _gradient_bg(slide, x: float, y: float, w: float, h: float,
+                 hex1: str, hex2: str, corner_mm: float = 2.0):
+    """Pillow로 수직 그라데이션 + 둥근 모서리 이미지를 생성해 슬라이드에 삽입."""
+    from PIL import Image, ImageDraw
+    scale = 8  # 8px/mm
+    pw, ph = max(int(w * scale), 2), max(int(h * scale), 2)
+    cr = max(int(corner_mm * scale), 1)
+    r1, g1, b1 = int(hex1[1:3], 16), int(hex1[3:5], 16), int(hex1[5:7], 16)
+    r2, g2, b2 = int(hex2[1:3], 16), int(hex2[3:5], 16), int(hex2[5:7], 16)
+
+    img = Image.new("RGBA", (pw, ph), (0, 0, 0, 0))
+    pix = img.load()
+    for row in range(ph):
+        t = row / max(ph - 1, 1)
+        rc = int(r1 + (r2 - r1) * t)
+        gc = int(g1 + (g2 - g1) * t)
+        bc = int(b1 + (b2 - b1) * t)
+        for col in range(pw):
+            pix[col, row] = (rc, gc, bc, 255)
+
+    mask = Image.new("L", (pw, ph), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, pw - 1, ph - 1], radius=cr, fill=255)
+    img.putalpha(mask)
+
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    buf.seek(0)
+    slide.shapes.add_picture(buf, Mm(x), Mm(y), Mm(w), Mm(h))
 
 
 def _hline(slide, x1: float, y: float, x2: float,
@@ -372,14 +382,8 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
     hole_offset = 14.0
     spec = SPEC["lanyard"]["E"]["text"]
 
-    # 그라데이션 배경
-    bg_shape = slide.shapes.add_shape(5, Mm(x), Mm(y), Mm(w), Mm(h))
-    adj = min(2.0 / (min(w, h) / 2) * 0.5, 0.5)
-    bg_shape.adjustments[0] = adj
-    bg_shape.fill.solid()
-    bg_shape.fill.fore_color.rgb = _rgb(grad_colors[0])
-    bg_shape.line.fill.background()
-    _set_gradient(bg_shape, grad_colors[0], grad_colors[1])
+    # 그라데이션 배경 (Pillow 방식 — XML 조작보다 안정적)
+    _gradient_bg(slide, x, y, w, h, grad_colors[0], grad_colors[1])
 
     sz_kr = spec["name_kr"]["size"]
     sz_en = spec["name_en"]["size"]
