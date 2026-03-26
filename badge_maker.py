@@ -312,7 +312,7 @@ def _draw_B(slide, person: dict, x: float, y: float, w: float, h: float,
     sz_kr = spec["name_kr"]["size"]  # 16
     sz_en = spec["name_en"]["size"]   # 9
     sz_rk = spec["rank"]["size"]       # 8
-    sz_co = spec["company"]["size"]    # 7
+    sz_co = 10  # 회사명 크기 (spec 기본값 7보다 크게)
 
     name_kr = (person.get("name_kr") or "")
     name_en = (person.get("name_en") or "").upper()
@@ -351,56 +351,9 @@ def _draw_B(slide, person: dict, x: float, y: float, w: float, h: float,
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Design C — Modern (미니멀 원형 로고 + 우측 텍스트, 여백 넉넉)
-# ═══════════════════════════════════════════════════════════════════════════════
-def _draw_C(slide, person: dict, x: float, y: float, w: float, h: float,
-            bg_hex: str, txt_hex: str, logo_path: Optional[str], company_name: str):
-    GPAD, GAP = 3.75, 1.3
-    spec = SPEC["badge"]["C"]["text"]
-
-    _rounded_rect(slide, x, y, w, h, bg_hex)
-
-    sz_kr = spec["name_kr"]["size"]  # 15
-    sz_rk = spec["rank"]["size"]       # 8
-    sz_dp = spec["dept"]["size"]       # 7
-
-    name_kr  = (person.get("name_kr") or "")
-    rank     = (person.get("rank") or "").strip()
-    dept     = (person.get("dept") or "").strip()
-    rank_ln  = rank if rank else dept
-    dept_ln  = dept if (rank and dept) else ""
-    muted    = _darken(txt_hex, 40)
-
-    # 로고 or fallback (비율 유지, 원형 클립 없음)
-    circle_d = h - GPAD * 2
-    lx = x + GPAD
-    ly = y + GPAD
-
-    if not _logo_rect(slide, logo_path, lx, ly, circle_d, circle_d, bg_hex=bg_hex):
-        if company_name:
-            _txt(slide, lx, ly, circle_d, circle_d,
-                 company_name[:5], "kr_bold", 5.5, txt_hex, PP_ALIGN.CENTER)
-
-    tx = lx + circle_d + GPAD
-    rw = w - (tx - x) - GPAD
-
-    lines = []
-    if name_kr:  lines.append((name_kr,  "kr_bold",    sz_kr, txt_hex))
-    if rank_ln:  lines.append((rank_ln,  "kr_regular", sz_rk, txt_hex))
-    if dept_ln:  lines.append((dept_ln,  "kr_regular", sz_dp, muted))
-
-    bh = sum(_pt_mm(sz) + GAP for _, _, sz, _ in lines) - (GAP if lines else 0)
-    cy = y + (h - bh) / 2
-
-    for text, fk, sz, col in lines:
-        _txt(slide, tx, cy, rw, _pt_mm(sz) + 1, text, fk, sz, col)
-        cy += _pt_mm(sz) + GAP
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # 공개 API
 # ═══════════════════════════════════════════════════════════════════════════════
-_DRAW = {"A": _draw_A, "B": _draw_B, "C": _draw_C}
+_DRAW = {"A": _draw_A, "B": _draw_B}
 
 
 def place_on_slide(
