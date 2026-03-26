@@ -178,7 +178,7 @@ _logo_cache: dict[tuple, tuple] = {}  # key -> (bytes, orig_w_px, orig_h_px)
 def _logo_rect(slide, logo_path: Optional[str],
                x: float, y: float, w: float, h: float,
                bg_hex: str = "#FFFFFF") -> bool:
-    """로고를 배경색 위에 합성해서 삽입. 원본 비율 유지, 결과 캐시."""
+    """로고 삽입. 투명 배경이면 그대로, 불투명이면 bg_hex로 합성. 비율 유지, 캐시."""
     if not logo_path:
         return False
     try:
@@ -187,14 +187,22 @@ def _logo_rect(slide, logo_path: Optional[str],
             from PIL import Image
             img = Image.open(logo_path).convert("RGBA")
             iw, ih = img.size
-            r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
-            bg = Image.new("RGBA", img.size, (r, g, b, 255))
-            bg.paste(img, mask=img.split()[3])
+            alpha = img.split()[3]
+            has_transparency = alpha.getextrema()[0] < 255  # 투명 픽셀 존재 여부
+
             buf = io.BytesIO()
-            bg.convert("RGB").save(buf, "PNG")
+            if has_transparency:
+                # 투명 배경 PNG → 그대로 삽입 (PowerPoint가 gradient 위에 투명 렌더링)
+                img.save(buf, "PNG")
+            else:
+                # 불투명 PNG → 배경색 합성 (체커보드 방지)
+                r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+                bg = Image.new("RGBA", img.size, (r, g, b, 255))
+                bg.paste(img, mask=alpha)
+                bg.convert("RGB").save(buf, "PNG")
             _logo_cache[cache_key] = (buf.getvalue(), iw, ih)
+
         data, iw, ih = _logo_cache[cache_key]
-        # 원본 비율 유지 — 주어진 w×h 박스에 꽉 맞되 비율 보존, 중앙 정렬
         aspect = iw / max(ih, 1)
         dw = min(w, h * aspect)
         dh = dw / aspect
@@ -297,8 +305,8 @@ def _draw_D(slide, person: dict, x: float, y: float, w: float, h: float,
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.14, 14.0)
-        logo_w = min(w * 0.65, logo_h * 6.0)
+        logo_h = min(h * 0.20, 20.0)
+        logo_w = min(w * 0.75, logo_h * 8.0)
         name_gap = 8.0
 
         block_h = (logo_h + 3.0 if logo_path or company_name else 0)
@@ -405,8 +413,8 @@ def _draw_E(slide, person: dict, x: float, y: float, w: float, h: float,
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.16, 16.0)
-        logo_w = min(w * 0.65, logo_h * 6.0)
+        logo_h = min(h * 0.22, 22.0)
+        logo_w = min(w * 0.75, logo_h * 8.0)
         name_gap = 9.0   # 날짜와 이름 사이 큰 여백
 
         # 전체 블록 높이 계산 → 수직 중앙 배치
@@ -513,8 +521,8 @@ def _draw_F(slide, person: dict, x: float, y: float, w: float, h: float,
         ev_name = (event_info.get("event_name") or "").strip()
         ev_date = (event_info.get("event_date") or "").strip()
 
-        logo_h = min(h * 0.14, 13.0)
-        logo_w = min(w * 0.65, logo_h * 6.0)
+        logo_h = min(h * 0.20, 20.0)
+        logo_w = min(w * 0.75, logo_h * 8.0)
         name_gap = 8.0
 
         block_h = (logo_h + 3.0 if logo_path or company_name else 0)

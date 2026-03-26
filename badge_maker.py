@@ -189,11 +189,17 @@ def _logo_rect(slide, logo_path: Optional[str],
             from PIL import Image
             img = Image.open(logo_path).convert("RGBA")
             iw, ih = img.size
-            r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
-            bg = Image.new("RGBA", img.size, (r, g, b, 255))
-            bg.paste(img, mask=img.split()[3])
+            alpha = img.split()[3]
+            has_transparency = alpha.getextrema()[0] < 255
+
             buf = io.BytesIO()
-            bg.convert("RGB").save(buf, "PNG")
+            if has_transparency:
+                img.save(buf, "PNG")
+            else:
+                r, g, b = int(bg_hex[1:3], 16), int(bg_hex[3:5], 16), int(bg_hex[5:7], 16)
+                bg = Image.new("RGBA", img.size, (r, g, b, 255))
+                bg.paste(img, mask=alpha)
+                bg.convert("RGB").save(buf, "PNG")
             _logo_cache[cache_key] = (buf.getvalue(), iw, ih)
         data, iw, ih = _logo_cache[cache_key]
         aspect = iw / max(ih, 1)
